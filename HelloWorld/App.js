@@ -1,39 +1,51 @@
-import React, { Component } from 'react';
-import { AppRegistry, Text, View } from 'react-native';
+import React from 'react';
+import { FlatList, ActivityIndicator, Text, View  } from 'react-native';
 
-class Blink extends Component {
-  constructor(props) {
+export default class FetchExample extends React.Component {
+
+  constructor(props){
     super(props);
-    this.state = {isShowingText: true};
+    this.state ={ isLoading: true}
+  }
 
-    // Toggle the state every second
-    setInterval(() => {
-      this.setState(previousState => {
-        return { isShowingText: !previousState.isShowingText };
+  componentDidMount(){
+    return fetch('https://facebook.github.io/react-native/movies.json')
+      .then((response) => response.json())
+      .then((responseJson) => {
+
+        this.setState({
+          isLoading: false,
+          dataSource: responseJson.movies,
+        }, function(){
+
+        });
+
+      })
+      .catch((error) =>{
+        console.error(error);
       });
-    }, 1000);
   }
 
-  render() {
-    let display = this.state.isShowingText ? this.props.text : ' ';
-    return (
-      <Text>{display}</Text>
-    );
-  }
-}
 
-export default class BlinkApp extends Component {
-  render() {
-    return (
-      <View>
-        <Blink text='I love to blink' />
-        <Blink text='Yes blinking is so great' />
-        <Blink text='Why did they ever take this out of HTML' />
-        <Blink text='Look at me look at me look at me' />
+
+  render(){
+
+    if(this.state.isLoading){
+      return(
+        <View style={{flex: 1, padding: 20}}>
+          <ActivityIndicator/>
+        </View>
+      )
+    }
+
+    return(
+      <View style={{flex: 1, paddingTop:20}}>
+        <FlatList
+          data={this.state.dataSource}
+          renderItem={({item}) => <Text>{item.title}, {item.releaseYear}</Text>}
+          keyExtractor={(item, index) => index}
+        />
       </View>
     );
   }
 }
-
-// skip this line if using Create React Native App
-AppRegistry.registerComponent('AwesomeProject', () => BlinkApp);
